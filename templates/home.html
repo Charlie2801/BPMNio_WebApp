@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>bpmn-js modeler demo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700,300">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.1.2/css/material-design-iconic-font.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400&family=Finger+Paint&display=swap">
+  
+
+  <link rel="stylesheet" href="../static/css/bpmn-js.css" />
+  <link rel="stylesheet" href="../static/css/diagram-js.css" />
+  <link rel="stylesheet" href="../static/css/bpmn.css" />
+  <link rel="stylesheet" href="../static/css/bpmn-embedded.css" />
+  <link rel="stylesheet" href="../static/css/bpmn_io.css" />
+  <link rel="stylesheet" href="../static/css/gpt_panel.css" />
+  <link rel="stylesheet" href="../static/css/animations.css" />
+</head>
+<body>
+
+
+  <div class="content" id="js-drop-zone">
+
+    <div class="message intro">
+      <div class="note">
+        Drop BPMN diagram from your desktop or <a id="js-create-diagram" href>create a new diagram</a> to get started.
+      </div>
+    </div>
+
+    <div class="message error">
+      <div class="note">
+        <p>Ooops, we could not display the BPMN 2.0 diagram.</p>
+
+        <div class="details">
+          <span>cause of the problem</span>
+          <pre></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas" id="js-canvas"></div>
+  </div>
+
+  <ul class="buttons">
+    <li>
+      download
+    </li>
+    <li>
+      <a id="js-download-diagram" href title="download BPMN diagram">
+        BPMN diagram
+      </a>
+    </li>
+    <li>
+      <a id="js-download-svg" href title="download as SVG image">
+        SVG image
+      </a>
+    </li>
+  </ul>
+
+
+
+
+  <div id="mySidepanel" class="sidepanel">
+
+
+
+    <div class="suggestion_panel" id="suggestion_panel">
+
+        <div class="desc_field" id="noText">
+          No Textual Description of Process provided yet 
+          <p>Click on "Provide Context"</p>
+        </div>
+
+        <div class="desc_field" id="noAssociation">
+          No Textual Description of Process provided yet 
+          <p>Click on "Provide Context"</p>
+        </div>
+
+    </div>
+
+
+    <form id="panel_board" action="">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+      <a href="javascript:;" class="btn btn-outline-primary " onclick="openContextCard()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Provide Context</a>
+      <p></p>
+      <a href="javascript:;" class="btn btn-outline-primary " onclick="openTextRequest()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">GPT API</a>
+      <p></p>
+      <a href="javascript:;" class="btn btn-outline-primary " id ="btn_cvnt" onclick="openCNBP()"style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Conventions</a>
+            <p></p>
+      <a href="javascript:;" class="btn btn-outline-primary " id ="predict_next" onclick="openCNBP()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Next Element</a>
+      <p></p>
+      <a href="javascript:;" class="btn btn-outline-primary " id ="inconsistencies" onclick="openCNBP()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Inconsistencies</a>
+
+
+    </form>
+
+    <!--
+    <form id="text" action="">
+    <p>Request <input type = "text" id = "text_field" name = "text_field" placeholder="Give a GPT-Request" /></p>
+     <button type = "submit"> Submit </button>
+     <button type = "reset" onclick="closeNav()"> Back </button>
+     <p id="gpt_answer" style="color:white;"></p>
+    </form>
+
+    -->
+
+
+    <form id="plain_text_answer" action="">
+      <p id="gpt_answer_2" style="color:white;">Please wait for your answer to be generated.</p>
+      <button type = "reset" onclick="closeNav()"> Back </button>
+    </form>
+
+  </div>
+
+  
+  <button id = "openbtn" class="btn btn-primary openbtn" onclick="openNav()"  style="display: block;top: 10px;right: 10px;">&#9776; Start Assistant</button>
+
+
+  <div class="card" id = "text">
+    <div id="message-section">
+      <div class="message" id="bot"><span id="bot-response">Hello.. I'm listening! Go on..</span></div>
+    </div>
+    <div id="input-section">
+      <input id="input" type="text" placeholder="Type a message" autocomplete="off" autofocus="autofocus"/>
+      <button class="send" id="sendMessage">   <!-- onclick="sendMessage()"> -->
+        <div class="circle"><i class="zmdi zmdi-mail-send"></i></div>
+      </button>
+      <a href="javascript:void(0)" class="close" onclick="closeMessage()">&times;</a>
+    </div>
+  </div>
+
+
+  
+
+  <div class="context" id = "context">
+    <form id="context_form">
+      <input class="name" id="process_name" placeholder="Provide Process Name">
+      <textarea class="description" id="description" placeholder="Please provide process describtion if available..."></textarea>
+      <a href="javascript:void(0)" class="close" onclick="closeMessage()">&times;</a>
+      <button class="send" id="send_context">
+        <div class="circle"><i class="zmdi zmdi-mail-send"></i></div>
+      </button>
+    </form>
+  </div>
+  
+
+ <script src="../static/js/home.js"></script>
+ <script src="../static/js/public/app.bundled.js/main.js"></script>
+
+ <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+</html>

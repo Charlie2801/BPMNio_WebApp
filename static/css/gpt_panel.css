@@ -1,0 +1,352 @@
+ /* The sidepanel menu */
+ .sidepanel {
+  height: 100%; /* Specify a height */
+  width: 0; /* 0 width - change this with JavaScript */
+  position: fixed; /* Stay in place */
+  left: 1002;
+  right: 0;
+  z-index: 1; /* Stay on top */
+  top: 0;
+  right: 0;
+  background-color: #111; /* Black*/
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 60px; /* Place content 60px from the top */
+  /* transition: 0.5s; 0.5 second transition effect to slide in the sidepanel */
+}
+
+/* The sidepanel links */
+.sidepanel a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 11px;
+  color: white;
+  display: block;
+  transition: 0.3s;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidepanel a:hover {
+  color: #f1f1f1;
+}
+
+/* Position and style the close button (top right corner) */
+.sidepanel .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+/* Style the button that is used to open the sidepanel */
+.openbtn {
+  position:absolute;
+  top: 0;
+  right: 0;
+  font-size: 15px;
+  cursor: pointer;
+  background-color: blue;
+  color: white;
+  padding: 0px 10px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+} 
+
+
+
+ /* Bordered form */
+
+ .center-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+}
+
+
+
+.cover {
+  height: 100vh;
+}
+
+
+
+* {
+  font-size: 1vw;
+  font-family: inherit;
+}
+
+html {
+  --scrollbarBG: #fff;
+  --thumbBG: #90a4ae;
+}
+
+body .card {
+  position:absolute;
+  height: 300px;
+  width: 35vw;
+  top: 260px;
+  right: 150px;
+  bottom: 0px;
+  backdrop-filter: blur(calc(0.34375px * var(--rem)));
+  background: linear-gradient(180deg, #FCFCFC 0%, #FCFCFC 100%);
+  border-radius: 20px;
+  box-shadow: 0px 0px 0px 0.5px #878DA2, 0px 0px 2px 0.5px rgba(135, 141, 162, 0.5), 0px 1px 8px 0.5px rgba(135, 141, 162, 0.1), 0px 2px 12px 0.5px rgba(135, 141, 162, 0.1), 0px 4px 20px 0.5px rgba(135, 141, 162, 0.25);
+  font-family: Inter, sans-serif;
+  max-width: calc(40px * var(--rem));
+  min-width: calc(18px * var(--rem));
+  margin-left: 0;
+  margin-top: 0;
+  z-index: 2;
+}
+
+body .card .close{
+  position: absolute;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+  color: black;
+}
+
+body .card #header {
+  height: 5vw;
+  background: #000;
+  padding: 0vw;
+}
+body .card #header h1 {
+  color: #fff;
+  font-size: 2vw;
+  font-family: "Finger Paint", cursive;
+  padding: 1vw;
+}
+body .card #message-section::-webkit-scrollbar {
+  width: 10px;
+}
+body .card #message-section {
+  height: 250px;
+  padding: 0 2.5vw;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--thumbBG) var(--scrollbarBG);
+}
+body .card #message-section::-webkit-scrollbar-track {
+  background: var(--scrollbarBG);
+}
+body .card #message-section::-webkit-scrollbar-thumb {
+  background-color: var(--thumbBG);
+  border-radius: 6px;
+  border: 3px solid var(--scrollbarBG);
+}
+body .card #message-section #bot,
+body .card #message-section #user {
+  position: relative;
+  bottom: 0;
+  min-height: 1.5vw;
+  border: 0.10vw solid #777;
+  background-color: #fff;
+  border-radius: 0px 1.5vw 1.5vw 1.8vw;
+  padding: 1vw;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin: 1.5vw 0;
+}
+body .card #message-section #user {
+  border: 1.5px solid #2468b1;
+  border-radius: 1.5vw 0vw 1.5vw 1.8vw;
+  background-color: #2468b1;
+  float: right;
+}
+body .card #message-section #user #user-response {
+  color: #fff;
+}
+body .card #message-section .message {
+  color: #000;
+  clear: both;
+  line-height: 1.2vw;
+  font-size: 1.2vw;
+  padding: 8px;
+  position: relative;
+  margin: 8px 0;
+  max-width: 85%;
+  word-wrap: break-word;
+  z-index: 2;
+}
+body .card #input-section {
+  z-index: 1;
+  padding: 0 2.5vw;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  overflow: hidden;
+  height: 3vw;
+  width: 95%;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  margin-left: 10px;
+}
+body .card #input-section input {
+  color: #000;
+  min-width: 0.5vw;
+  outline: none;
+  height: 3vw;
+  width: 26vw;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+body .card .send {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin-left: 1.4vw;
+  margin-right: 0vw;
+  padding: 0;
+  position: relative;
+  outline: none;
+}
+body .card .send .circle {
+  position: relative;
+  width: 4.8vw;
+  height: 4vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+body .card .send .circle i {
+  font-size: 2vw;
+  margin-left: -1vw;
+  margin-top: 1vw;
+  color: gray;
+}
+
+
+/* Suggestions Container */
+body .suggestion_panel {
+  position:fixed;
+  height: 100%;
+  width: 35vw;
+  right: 150px;
+  bottom: 0px;
+  backdrop-filter: blur(calc(0.34375px * var(--rem)));
+  background: linear-gradient(180deg, #FCFCFC 0%, #FCFCFC 100%);
+  font-family: Inter, sans-serif;
+  max-width: calc(40px * var(--rem));
+  min-width: calc(18px * var(--rem));
+  margin-left: 0;
+  margin-top: 0;
+  transition: 0.5s;
+  box-shadow: 0px 0px 0px 0.5px #878DA2, 0px 0px 2px 0.5px rgba(135, 141, 162, 0.5), 0px 1px 8px 0.5px rgba(135, 141, 162, 0.1), 0px 2px 12px 0.5px rgba(135, 141, 162, 0.1), 0px 4px 20px 0.5px rgba(135, 141, 162, 0.25);
+}
+
+body .suggestion_panel .desc_field {
+  padding: 0 2.5vw;
+  height: 20vw;
+  width: 95%;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  margin-left: 10px;
+  margin-top: 10px;
+  resize: none;
+  overflow: auto;
+}
+
+body .suggestion_panel .close {
+  position: absolute;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+  color: black;
+}
+
+
+/* Context Container */
+body .context {
+  position:absolute;
+  height: 350px;
+  width: 35vw;
+  top: 80px;
+  right: 435px;
+  bottom: 0px;
+  backdrop-filter: blur(calc(0.34375px * var(--rem)));
+  background: linear-gradient(180deg, #FCFCFC 0%, #FCFCFC 100%);
+  border-radius: 20px;
+  box-shadow: 0px 0px 0px 0.5px #878DA2, 0px 0px 2px 0.5px rgba(135, 141, 162, 0.5), 0px 1px 8px 0.5px rgba(135, 141, 162, 0.1), 0px 2px 12px 0.5px rgba(135, 141, 162, 0.1), 0px 4px 20px 0.5px rgba(135, 141, 162, 0.25);
+  font-family: Inter, sans-serif;
+  max-width: calc(40px * var(--rem));
+  min-width: calc(18px * var(--rem));
+  margin-left: 0;
+  margin-top: 0;
+  z-index: 2;
+}
+
+body .context .name {
+  z-index: 1;
+  padding: 0 2.5vw;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  overflow: hidden;
+  height: 3vw;
+  width: 95%;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  margin-left: 10px;
+  margin-top: 20px;
+
+}
+
+body .context .description {
+  z-index: 1;
+  padding: 0 2.5vw;
+  height: 20vw;
+  width: 95%;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  margin-left: 10px;
+  margin-top: 10px;
+  resize: none;
+}
+
+body .context .send {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin-left: 1.4vw;
+  margin-right: 0vw;
+  padding: 0;
+  position: relative;
+  outline: none;
+}
+
+body .context .send .circle{
+  position: relative;
+  width: 4.8vw;
+  height: 3vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 29vw;
+  bottom: 0.5vw;
+}
+
+body .context  .send .circle i {
+  font-size: 2vw;
+  margin-left: -1vw;
+  margin-top: 1vw;
+  color: gray;
+}
+

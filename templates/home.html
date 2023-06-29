@@ -63,6 +63,7 @@
 
 
   <div id="mySidepanel" class="sidepanel">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="right: 10px; font-size: 25px;">&times;</a>
 
 
 
@@ -73,26 +74,67 @@
           <p>Click on "Provide Context"</p>
         </div>
 
-        <div class="desc_field" id="noAssociation">
-          No Textual Description of Process provided yet 
-          <p>Click on "Provide Context"</p>
+        <div class="association_field" id="noAssociation">
+          <table id="activities">
+            <thead>
+                <tr>
+                    <th colspan="2">Process Activities</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="background-color: #cbcbcb;">Performer</td>
+                    <td style="background-color: #cbcbcb;">Task</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="association_field" id="label_suggestion">
+          <table id="labels">
+            <thead>
+                <tr>
+                    <th colspan="2">Process Labels</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="background-color: #cbcbcb;">Current Label</td>
+                    <td style="background-color: #cbcbcb;">Suggested Label</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="association_field" id="inconsistency_field">
+        </div>
+
+        <div class="button_field" id="suggestion_buttons">
+          <button id="inconsistencies" onclick="openInconsistencies()">Inconsistencies</button>
+          <button id="activity_button" onclick="openActivities()">Activities</button>
+          <button id="labels_button" onclick="openLabels()">Labeling</button>
         </div>
 
     </div>
 
-
     <form id="panel_board" action="">
-      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
       <a href="javascript:;" class="btn btn-outline-primary " onclick="openContextCard()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Provide Context</a>
       <p></p>
       <a href="javascript:;" class="btn btn-outline-primary " onclick="openTextRequest()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">GPT API</a>
       <p></p>
-      <a href="javascript:;" class="btn btn-outline-primary " id ="btn_cvnt" onclick="openCNBP()"style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Conventions</a>
+      <!-- <a href="javascript:;" class="btn btn-outline-primary " id ="btn_cvnt" onclick="openCNBP()"style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Conventions</a>
             <p></p>
       <a href="javascript:;" class="btn btn-outline-primary " id ="predict_next" onclick="openCNBP()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Next Element</a>
-      <p></p>
+      <p></p> 
       <a href="javascript:;" class="btn btn-outline-primary " id ="inconsistencies" onclick="openCNBP()" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Inconsistencies</a>
+        -->
+      
+      <div class="center-screen" id="wait" style="color: white;">Please wait for GPT response
+        <p></p>
 
+        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+      
+      </div>
 
     </form>
 
@@ -129,16 +171,28 @@
       </button>
       <a href="javascript:void(0)" class="close" onclick="closeMessage()">&times;</a>
     </div>
+    <div id="chip_section">
+      <form id="panel_board" action="">
+        <a style="margin-right: 10px;margin-left: 10px;padding-right: 8px;padding-left: 8px; width: 120px;"><b>Prompt Ideas: </b></a>
+        <a href="javascript:;" class="btn btn-outline-primary " id="questions" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Unsolved Questions</a>
+        <p></p>
+        <a href="javascript:;" class="btn btn-outline-primary " id="auto" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Automization</a>
+        <p></p>
+        <a href="javascript:;" class="btn btn-outline-primary " id ="enhance" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Enhancement</a>
+              <p></p>
+        <a href="javascript:;" class="btn btn-outline-primary " id ="weaknesses" style="margin-right: 15px;margin-left: 15px;padding-right: 8px;padding-left: 8px; width: 120px;">Weaknesses</a>
+      </form>
+    </div>
   </div>
 
 
   
 
   <div class="context" id = "context">
+    <a href="javascript:void(0)" class="close" onclick="closeContext()">&times;</a>
     <form id="context_form">
       <input class="name" id="process_name" placeholder="Provide Process Name">
       <textarea class="description" id="description" placeholder="Please provide process describtion if available..."></textarea>
-      <a href="javascript:void(0)" class="close" onclick="closeMessage()">&times;</a>
       <button class="send" id="send_context">
         <div class="circle"><i class="zmdi zmdi-mail-send"></i></div>
       </button>

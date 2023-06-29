@@ -187,26 +187,71 @@ request_form.addEventListener('submit', function (event) {
 });
 
 
+// Label Suggestions
+const label_button = document.getElementById('labels_button');
+label_button.addEventListener('click', function (event) {
+  event.preventDefault();
+  let product;
+  document.getElementById("wait").style.display="block";
 
-  //Best Practices & Conventions
-  const cvnt = document.getElementById('btn_cvnt');
-  cvnt.addEventListener('click', function (event) {
+  modeler.saveXML({ format: true }, function (err, xml) {
+    $.ajax({
+      type: 'POST',
+      url: '/label_suggestion',
+      data: {model:xml}
+    }).done(function(response){
+      product = response;
+
+      var table = document.getElementById('labels');
+      table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
+
+      console.log(product)
+
+      for(let i = 0; i < product.length; i++){
+        var row = table.insertRow(-1);
+        var cell_old = row.insertCell(0);
+        var cell_new = row.insertCell(1);
+        cell_old.innerHTML = product[i][1];
+        cell_new.innerHTML = product[i][0];
+      };
+
+      document.getElementById("inconsistency_field").style.display="none";
+      document.getElementById("label_suggestion").style.display="block";
+      document.getElementById("noAssociation").style.display="none";
+      document.getElementById("wait").style.display="none";
+  
+    });
+  });
+});
+
+
+
+  //Best Practices 7PMG
+/*
+  const pmg = document.getElementById('7PMG');
+  pmg.addEventListener('click', function (event) {
     event.preventDefault();
+    let product;
+
+    addUserChat("Does the Business Process Model adhere to the 7PMG?");
+    addPendingAnimation();
+
     modeler.saveXML({ format: true }, function (err, xml) {
       $.ajax({
         type: 'POST',
-        url: '/conventions',
+        url: '/best_practices',
         data: {model:xml}
       }).done(function(response){
-        document.getElementById("gpt_answer_2").innerHTML = response;
+        document.getElementById("pending").remove();
+        product = response;
+        addBotChat(product);
     
       });
     });
   });
 
-
-
-
+*/
+/*
 
 const predict_form = document.getElementById("predict_next");
 predict_form.addEventListener('click', function (event) {
@@ -228,11 +273,17 @@ predict_form.addEventListener('click', function (event) {
   });
 });
 
+*/
+
+
+// Best Practices: 7PMG
+
 
 //context form
 const context_send = document.getElementById("send_context");
 context_send.addEventListener('click', function (event) {
   event.preventDefault();
+  document.getElementById("wait").style.display="block";
 
   const pname = document.getElementById("process_name").value;
   const desc = document.getElementById("description").value;
@@ -248,11 +299,30 @@ context_send.addEventListener('click', function (event) {
       console.log(response)
       if(response!= "200"){
         document.getElementById("noText").innerHTML =  response[0];
-        document.getElementById("noAssociation").innerHTML =  response[3];
+
+        // add associations to table 
+        var associations = response[4];
+        var table = document.getElementById('activities');
+
+        for(let i = 0; i < associations.length; i++){
+          var row = table.insertRow(-1);
+          var cell_performer = row.insertCell(0);
+          var cell_activity = row.insertCell(1);
+          cell_performer.innerHTML = associations[i][0];
+          cell_activity.innerHTML = associations[i][1];
+        };
+        document.getElementById("inconsistency_field").style.display="none";
+        document.getElementById("label_suggestion").style.display="none";
+        document.getElementById("noAssociation").style.display="block";
+        document.getElementById("suggestion_buttons").style.display="block";
+        document.getElementById("wait").style.display="none";
+
+        //document.getElementById("noAssociation").innerHTML =  response[3];
       }
 
     } catch{
       document.getElementById("noText").innerHTML = "No successful response: \n" + response;
+      document.getElementById("wait").style.display="none";
     };
   });
 
@@ -262,7 +332,7 @@ context_send.addEventListener('click', function (event) {
 const inconsistencies = document.getElementById("inconsistencies");
 inconsistencies.addEventListener('click', function (event) {
   event.preventDefault();
-  console.log("start")
+  document.getElementById("wait").style.display="block";
 
   modeler.saveXML({ format: true }, function (err, xml) {
     $.ajax({
@@ -271,9 +341,15 @@ inconsistencies.addEventListener('click', function (event) {
       data: {model:xml}
     }).done(async function(response){
       try{
-        document.getElementById("noAssociation").innerHTML = response;
+        document.getElementById("inconsistency_field").innerHTML = response;
+        document.getElementById("inconsistency_field").style.display="block";
+        document.getElementById("noAssociation").style.display="none";
+        document.getElementById("label_suggestion").style.display="none";
+        document.getElementById("wait").style.display="none";
+
       } catch{
-        document.getElementById("gpt_answer_2").innerHTML = "No successful response: \n" + response;
+        document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
+        document.getElementById("wait").style.display="none";
       }
       
 
@@ -282,10 +358,48 @@ inconsistencies.addEventListener('click', function (event) {
 });
 });
 
+//Unsolved Questions
+const quest = document.getElementById("questions");
+quest.addEventListener('click', function (event) {
+  event.preventDefault();
+  providedPrompts(0);
+});
 
+// Ways of Automization 
+const auto = document.getElementById("auto");
+auto.addEventListener('click', function (event) {
+  event.preventDefault();
+  providedPrompts(1);
+});
+
+// Ways of Enhancement
+const enhance = document.getElementById("enhance");
+enhance.addEventListener('click', function (event) {
+  event.preventDefault();
+  providedPrompts(2);
+});
+
+// weaknesses
+const weak = document.getElementById("weaknesses");
+weak.addEventListener('click', function (event) {
+  event.preventDefault();
+  providedPrompts(3);
+});
+
+
+function providedPrompts(index){
+  var prompts = [
+    "What questions does the process raise that remain unanswered? Provide a enumeration",
+    "Which process tasks can be automated? How can this automation be implemented?",
+    "Provide possibilites to enhance the process.",
+    "Does the process currently display any weaknesses? Provide a enumeration"
+  ];
+
+  var input = prompts[index];
+  input != "" && output(input);
+}
 
 //chatbot
-
 const label = document.getElementById("sendMessage");
 label.addEventListener('click', function (event) {
   event.preventDefault();
@@ -325,10 +439,30 @@ function output(input) {
     }).done(function(response){
       product = response;
       document.getElementById("pending").remove();
+      product = formatHTMLOutput(product);
+      console.log(product);
       addBotChat(product);
   
     });
   });
+
+}
+
+function formatHTMLOutput(product){
+  product = product.replace(/- /g, "<br>-");
+  product = product.replace(/0/g, "<br>0");
+  product = product.replace(/1/g, "<br>1");
+  product = product.replace(/2/g, "<br>2");
+  product = product.replace(/3/g, "<br>3");
+  product = product.replace(/4/g, "<br>4");
+  product = product.replace(/5/g, "<br>5");
+  product = product.replace(/6/g, "<br>6");
+  product = product.replace(/7/g, "<br>7");
+  product = product.replace(/8/g, "<br>8");
+  product = product.replace(/9/g, "<br>9");
+
+  return product
+
 
 }
 

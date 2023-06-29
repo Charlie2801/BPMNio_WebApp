@@ -8,7 +8,7 @@ modelhub_dataset = load_dataset("patriziobellan/PET", name='relations-extraction
 #from models import Person
 
 
-print(openai_api.getPerformerExample(modelhub_dataset, 0)[0])
+#print(openai_api.getPerformerExample(modelhub_dataset, 0)[0])
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'random_1'
@@ -109,8 +109,50 @@ def prediction():
         answer = openai_api.nextElm_request(model, name, desc)
         print(answer)
         return answer
+    
+    
+@app.route('/label_suggestion', methods = ['POST'])
+def label_suggestion():
+    if request.method == 'POST':
+        model = request.form['model']
+
+        if 'desc' in session:
+            desc = session['desc']
+        else:
+            desc = None
+
+        answer = openai_api.getLabelSuggestion(model, desc)
+        return answer
 
 
+
+# ommitable
+@app.route('/best_practices', methods = ['POST'])
+def best_practices():
+    if request.method == 'POST':
+        model = request.form['model']
+
+        print(session['name'])
+
+        if 'name' in session:
+            name = session['name']
+        else:
+            name = None
+
+        if 'desc' in session:
+            desc = session['desc']
+        else:
+            desc = None
+        #answer = openai_api.pmg_request(model, name, desc)
+        answer = openai_api.pmgSix(model, desc)
+        print(answer)
+        return answer
+
+'''
+@app.route('/enhancement', methods = ['POST'])
+def enhancement():
+
+'''   
 
 
 

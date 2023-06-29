@@ -1,13 +1,14 @@
 import os
 import openai
-
+import re 
+import xml.etree.ElementTree as ET
 
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
 from langchain.chains.conversation.memory import ConversationSummaryMemory
-import nltk
-nltk.download('averaged_perceptron_tagger')
-from nltk import pos_tag
+#import nltk
+#nltk.download('averaged_perceptron_tagger')
+#from nltk import pos_tag
 
 
 
@@ -107,14 +108,12 @@ def prepareActorExample(data, text, type):
 
 
 def getPerformerExample(modelhub_dataset , index):
-    print(modelhub_dataset)
     tokens = modelhub_dataset['test'][index]['tokens']
     tags = modelhub_dataset['test'][index]['ner_tags']
     relations = modelhub_dataset['test'][index]['relations']
     sentence_id = modelhub_dataset['test'][index]['sentence-IDs']
     uses = []
-    print(relations['relation-type'])
-    print(relations['source-head-sentence-ID'])
+
 
     # stores solely activity -> "receives"
     activities = [] 
@@ -123,7 +122,7 @@ def getPerformerExample(modelhub_dataset , index):
     activity_sentence = []
 
     for i in range(0, len(relations['relation-type'])):
-        if((relations['relation-type'][i] == "actor performer") or (relations['relation-type'][i] == "actor recipient")):
+        if((relations['relation-type'][i] == "actor performer")): #or (relations['relation-type'][i] == "actor recipient")):
             source_head_sentence_ID = relations['source-head-sentence-ID'][i]
             source_head_word_ID = relations['source-head-word-ID'][i]
             token_index_activity =  [j for j, n in enumerate(sentence_id) if n == source_head_sentence_ID][source_head_word_ID]
@@ -196,7 +195,6 @@ def getActivities(modelhub_dataset, txt):
     ex_in_one_activities = ', '.join(prepExample[0])
 
     ex_in_one = "Textual Description: " + ex_in_one_desc + " \n Activities: " + ex_in_one_activities
-    print("First Example: \n" + ex_in_one)
 
     # prepare example 2:
     prepExample_two = getPerformerExample(modelhub_dataset, 7)
@@ -209,7 +207,6 @@ def getActivities(modelhub_dataset, txt):
     ex_in_two_activities = ', '.join(prepExample[0])
 
     ex_in_two = "Textual Description: " + ex_in_two_desc + " \n Activities: " + ex_in_two_activities
-    print("Second Example: \n" + ex_in_two)
 
 
     # conduct request    
@@ -218,6 +215,7 @@ def getActivities(modelhub_dataset, txt):
     txt = txt.replace(";", " ; ") 
 
     # make get activities of text request
+    print("First Request")
     response_activity = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
@@ -236,6 +234,7 @@ def getActivities(modelhub_dataset, txt):
     prompt = "Textual Description: " + txt + "\n Activities: " + activities
 
     # make get participant association request
+    print("Second Request")
     response_association = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
@@ -263,20 +262,18 @@ def getActivities(modelhub_dataset, txt):
 
 
     # make get activity data object request
-    print(prepExample[2])
     ex_activity_data_one_sol = []
     for i in range(len(prepExample[2])):
         data = prepExample[2]
-        ex_activity_data_one_sol.append(' '.join(data[i]))
+        ex_activity_data_one_sol.append(' - '.join(data[i]))
 
-    print(ex_activity_data_one_sol)
     ex_prompt = "Process Description: " + ex_in_one_desc + ", Activities: " +', '.join([item[0] for item in data])
     ex_activity_data_one_sol = ', '.join(ex_activity_data_one_sol)
 
     prompt = "Process Description: " + txt + ", Activities: " + activities
         
 
-
+    print("Third Request")
     response_activity_data = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
@@ -289,18 +286,52 @@ def getActivities(modelhub_dataset, txt):
     temperature=0
     ) 
 
-    print(response_activity_data['choices'][0]['message']['content'])
 
     #remove duplicates
     performer = list(dict.fromkeys(performer))
-    print("Found Activities: " + activities)
-    print("Found Associations: " + response_association['choices'][0]['message']['content'])
-
-    resp_txt = createHTMLText(activities=activities, actors=performer, txt=txt)
     associations = response_association['choices'][0]['message']['content']
+
+
+    #check associations for activities and replace with activity + activity data
+    #activities_split = activities.split(", ")
+    activity_data = response_activity_data['choices'][0]['message']['content']
+    activity_data_split = activity_data.split(', ')
+    activity_data_split = [i.split(' - ') for i in activity_data_split]
+    associations_split = associations.split(', ')    #[ ['the sales department->creates'], ['a member of the sales department->rejects'] ]
+
+    associations_split = [item.split('->') for item in associations_split] #[ ['the sales department', 'creates'], ['a member of the sales department', 'rejects'] ]
+    act = activity_data_split
+    x = [item[0] for item in act]
+    
+    for i in range(len(associations_split)):
+        if associations_split[i][1] in x:
+            index = x.index(associations_split[i][1])
+            x[index] = ""  #should not be called again, but index must stay the same
+
+            obj = ' '.join(activity_data_split[index])
+            print(obj)
+            associations_split[i][1] = obj
+        
+        associations_split[i] = '->'.join(associations_split[i])
+
+
+    
+    associations = ', '.join(associations_split)
+    associations_new = associations.split(', ')
+    associations_new = [item.split("->") for item in associations_new]
+
+        #associations = associations.replace(activity_data_split[i][0], obj)
+
     associations = associations.replace(", ", " <br>")
 
-    response = [resp_txt, activities, performer, associations]
+
+    print(activity_data_split)
+
+    resp_txt = createHTMLText(activities= activity_data_split, actors=performer, txt=txt)
+
+    print("finished")
+        
+    response = [resp_txt, activities, performer, associations, associations_new]
 
 
     return response
@@ -312,17 +343,24 @@ def createHTMLText(actors, activities, txt):
         replace = "<span title='Actor'><mark  style='background-color:#d1d581;'>"+i+"</mark></span>"
         txt = txt.lower().replace(i.lower(), replace).rstrip()
 
+    for i in range(len(activities)):
+        x = activities[i][0]
+        replace = "<span title='Activity'><mark style='background-color:#aed581;'>"+x+"</mark></span>"
+        txt = txt.lower().replace(x.lower(), replace).rstrip()
+
+        x = activities[i][1]
+        replace = "<span title='Activity'><mark style='background-color:#aed581;'>"+x+"</mark></span>"
+        txt = txt.lower().replace(x.lower(), replace).rstrip()
+ 
+    '''
     activities = activities.replace(", ", " ")
     activities = activities.split(" ")
     activities = list(dict.fromkeys(activities))
 
     for i in activities:
-        #check if word in verb
-        pos = pos_tag([i])[0][1][0]
-        print(i + "" + pos)
-        if (pos == "V" or pos == "N") and i not in actors:
-            replace = "<span title='Activity'><mark style='background-color:#aed581;'>"+i+"</mark></span>"
-            txt = txt.lower().replace(i.lower(), replace).rstrip()
+        replace = "<span title='Activity'><mark style='background-color:#aed581;'>"+i+"</mark></span>"
+        txt = txt.lower().replace(i.lower(), replace).rstrip()
+    '''
 
     return txt
 
@@ -336,7 +374,6 @@ def getInconsistencies(activities, model):
 
     ex_prompt = "Which of these tasks (" + ex_activities + ") are not depicted within the BPMN? BPMN: " + example_xml 
     prompt = "Which of these tasks (" + activities + ") are not depicted within the BPMN? BPMN: " +model 
-    print(activities)
 
     messages = [        
         {"role": "system", "content": "You are a business process modeling specialist"},
@@ -350,8 +387,112 @@ def getInconsistencies(activities, model):
     temperature=0
     )
 
-    print(txt)
     return txt['choices'][0]['message']['content']
+
+
+
+def pmgSix_old(xml):
+    root = ET.fromstring(xml)
+    tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process']
+    labels = []
+
+    # get Activity labels of BPMN XML
+    for item in root.iter():
+        if item.tag not in tagList:
+            if 'name' in item.attrib:
+                labels.append(item.attrib['name'])
+
+    labels = ', '.join(labels)
+
+    example_input = 'invoice received, confirm status, cancel reservation, reservation canceling, accept, accept card, send application, form submition'
+    example_output = 'invoice received, reservation canceling, accept, form submition.'
+
+    example_input_two = 'Puzzle solved, receive book, build code, Order complete, check, message decoded'
+    example_output_two = 'Puzzle solved, Order complete, check, message decoded.'
+
+    example_input_three = 'Talent acquisition, Evaluate employee performance, Develop vendor partnerships, Process payment, Generate report, Risk assessment, Approve request, Budget planning'
+    example_output_three = 'Talent acquisition, Risk assessment, Budget planning'
+
+    correct_examples = ['confirm status', 'receive message', 'cancel reservation', 'evaluate employee performance', 'develop vendor partnerships', 'generate report',  'approve request', 'process customer inquiry', 'train employees', 'coordinate logistics', 'implement cost-saving measures']
+    incorrect_examples = ['talent acquisition', 'risk assessment',' budget planning', 'puzzle solved', 'order complete', 'check',' message decoded', 'invoice received', 'reservation canceling', 'accept', 'form submition', "process", "good processed", 'product development', 'paper submission', 'vendor selection', 'order incomplete', 'selection', 'improvement']
+
+    msg = [
+            {"role": "system", "content": "You are a business process modeling expert"},
+            {"role": "user", "content": "Determine if the following activity label adheres to the verb-object labeling style? Please answer with 'Yes' or 'No'."}
+    ]
+
+
+    for i in range(len(correct_examples)):
+        msg.append({"role": "user", "content": correct_examples[i]})
+        msg.append({"role": "assistant", "content": "Yes"})
+
+    for i in range(len(incorrect_examples)):
+        msg.append({"role": "user", "content": incorrect_examples[i]})
+        msg.append({"role": "assistant", "content": "No"})
+
+
+
+    print(labels)
+    messages = msg
+    messages.append({"role": "user", "content": labels})
+
+    print(len(incorrect_examples)+len(correct_examples))
+    
+    txt = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages = messages,
+    temperature=0
+    )
+
+    return txt['choices'][0]['message']['content']
+
+
+
+def getLabelSuggestion(xml, desc):
+    root = ET.fromstring(xml)
+    tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process']
+    labels = []
+
+    # get Activity labels of BPMN XML
+    for item in root.iter():
+        if item.tag not in tagList:
+            if 'name' in item.attrib:
+                labels.append(item.attrib['name'])
+
+    #labels = ', '.join(labels)
+    resp = []
+
+    for i in labels:
+        print(i)
+
+        msg = [
+                {"role": "system", "content": "You are a business process modeling expert"},
+                {"role": "user", "content": "consider the following business process: " + desc},
+                {"role": "user", "content": "make a verb-object label out of: " + i + ". Only give the generated."}
+        ]
+
+        messages = msg
+        #messages.append({"role": "user", "content": "Labels: " + labels})
+
+        
+        txt = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages = messages,
+        temperature=0
+        )
+
+        answers = txt['choices'][0]['message']['content']
+
+        resp.append([answers])
+
+    for i in range(len(resp)):
+        resp[i].append(labels[i])
+
+    print(resp)
+
+    return resp
+
+
 
 
 def convention_request(model, name):
@@ -363,7 +504,6 @@ def convention_request(model, name):
     max_tokens=1000,
     temperature=0
     )
-    print(txt)
     return txt['choices'][0]['message']['content']
 
 def nextElm_request(model, name, desc):
@@ -375,12 +515,13 @@ def nextElm_request(model, name, desc):
     max_tokens=3000,
     temperature=0
     )
-    print(txt)
+
     return txt['choices'][0]['message']['content']
 
 
 
 def text_request(text, model, name, desc):
+    print(model)
     context = [ {'role': "system", "content": "You are an Business Process Analyst"} ]
     
     if desc is None and name is None:
@@ -410,7 +551,7 @@ def text_request(text, model, name, desc):
         max_tokens=4000,
         temperature=0
         )
-        print(txt)
+
         return txt['choices'][0]['message']['content']
     except openai.error.APIError as e:
         return f"Error: {e}"
@@ -421,6 +562,53 @@ def text_request(text, model, name, desc):
         #Handle rate limit error (we recommend using exponential backoff)
         return  f"OpenAI API request exceeded rate limit: {e}"
 
+
+
+# Best Practices: 7PMG
+def pmg_request(model, name, desc):
+    context = [ {'role': "system", "content": "You are an Business Process Analyst"} ]
+    pmg = "G1: Use as few elements in the model as possible, G2: Minimize the routing paths per element. The higher the degree of an element in the process model, i.e. the number of input and output arcs together, the harder it becomes to understand the model, G3: Use one start and one end event, G4: every gateway splitting the process matches a respective gateway of the same type joining the process, G5: Avoid OR routing elements, G6: Use verb-object sentence structure activity labels, G7: the model should not have more than 50 elements"
+    context.append({'role': "system", "content": "7 Business Process Modelling Guidelines (7PMG): " + pmg})
+   
+    msg = context
+
+
+    # Example G4
+    with open("C:/Users/charl/OneDrive/Desktop/BPMNio_WebApp/static/resources/G3_4_incorrect.txt", "r") as file:
+        example_xml = file.read().rstrip()
+    ex_g_four_incorrect = {'role': 'user', 'content': "Does the Business Process Model adhere to G4? Model: " + example_xml} 
+    ex_g_four_incorrect_sol = {'role': 'assistant', 'content': "The Model does not adhere to G4 as not all splitting gateways ('Gateway_1d3elyl') match a respective join gateway."} 
+    with open("C:/Users/charl/OneDrive/Desktop/BPMNio_WebApp/static/resources/G3_4_correct.txt", "r") as file:
+        example_xml = file.read().rstrip()
+    ex_g_four_correct = {'role': 'user', 'content': "Does the Business Process Model adhere to G4? Model: " + example_xml} 
+    ex_g_four_correct_sol = {'role': 'assistant', 'content': "The Model does adhere to G4 as all splitting gateways ('Gateway_1d3elyl') match a respective join gateway ('Gateway_1xj4ost')."} 
+    
+    msg.append(ex_g_four_incorrect)
+    msg.append(ex_g_four_incorrect_sol)
+    msg.append(ex_g_four_correct)
+    msg.append(ex_g_four_correct_sol)
+
+    text = {'role': 'user', 'content': "Does the Business Process Model adhere to the G4? Model: " + model} 
+    msg.append(text)
+
+    print(msg)
+    
+    try:
+        txt = openai.ChatCompletion.create(
+        model= "gpt-3.5-turbo-16k",
+        messages = msg,
+        temperature=0
+        )
+
+        return txt['choices'][0]['message']['content']
+    except openai.error.APIError as e:
+        return f"Error: {e}"
+    except openai.error.APIConnectionError as e:
+        #Handle connection error here
+        return  f"Failed to connect to OpenAI API: {e}"
+    except openai.error.RateLimitError as e:
+        #Handle rate limit error (we recommend using exponential backoff)
+        return  f"OpenAI API request exceeded rate limit: {e}"
     
 
 

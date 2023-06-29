@@ -89,13 +89,12 @@ html {
 body .card {
   position:absolute;
   height: 300px;
-  width: 35vw;
+  width: 47.5vw;
   top: 260px;
-  right: 150px;
+  right: 0px;
   bottom: 0px;
   backdrop-filter: blur(calc(0.34375px * var(--rem)));
   background: linear-gradient(180deg, #FCFCFC 0%, #FCFCFC 100%);
-  border-radius: 20px;
   box-shadow: 0px 0px 0px 0.5px #878DA2, 0px 0px 2px 0.5px rgba(135, 141, 162, 0.5), 0px 1px 8px 0.5px rgba(135, 141, 162, 0.1), 0px 2px 12px 0.5px rgba(135, 141, 162, 0.1), 0px 4px 20px 0.5px rgba(135, 141, 162, 0.25);
   font-family: Inter, sans-serif;
   max-width: calc(40px * var(--rem));
@@ -128,7 +127,13 @@ body .card #message-section::-webkit-scrollbar {
   width: 10px;
 }
 body .card #message-section {
-  height: 250px;
+  position: absolute;
+  top: 10px;
+  right: 150px;
+  width: 35vw;
+  border-radius: 20px;
+  background: #d2d2d2;
+  height: 240px;
   padding: 0 2.5vw;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -177,6 +182,10 @@ body .card #message-section .message {
   z-index: 2;
 }
 body .card #input-section {
+  position: absolute;
+  bottom: 5px;
+  right: 150px;
+  width: 35vw;
   z-index: 1;
   padding: 0 2.5vw;
   display: flex;
@@ -184,7 +193,6 @@ body .card #input-section {
   align-items: flex-end;
   overflow: hidden;
   height: 3vw;
-  width: 95%;
   border-style: solid;
   border-width: 1px;
   border-radius: 5px;
@@ -201,6 +209,21 @@ body .card #input-section input {
   border-right: none;
   border-bottom: none;
 }
+
+body .card #chip_section {
+  height: 100%; /* Specify a height */
+  width: 150px; /* 0 width - change this with JavaScript */
+  position: absolute; /* Stay in place */
+  left: 1002;
+  right: 0;
+  top: 0;
+  right: 0;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 30px;
+}
+
+
+
 body .card .send {
   background: transparent;
   border: 0;
@@ -260,6 +283,38 @@ body .suggestion_panel .desc_field {
   overflow: auto;
 }
 
+body .suggestion_panel .association_field {
+  height: 20vw;
+  width: 95%;
+  box-sizing: border-box;
+  border-style: none;
+  margin-left: 10px;
+  margin-top: 10px;
+  resize: none;
+  overflow: auto;
+}
+
+body .suggestion_panel .button_field {
+  width: 100%;
+  box-sizing: border-box;
+  border-style: none;
+  margin: 10px;
+
+}
+
+table {
+  width: 100%;
+}
+
+table, td{
+  border: 1px solid #333;
+}
+
+thead, tfood {
+  background-color: #333;
+  color: #fff;
+}
+
 body .suggestion_panel .close {
   position: absolute;
   right: 25px;
@@ -287,6 +342,15 @@ body .context {
   margin-left: 0;
   margin-top: 0;
   z-index: 2;
+}
+
+body .context .close{
+  position: absolute;
+  right: 20px;
+  top: 0px;
+  font-size: 20px;
+  margin-left: 10px;
+  color: black;
 }
 
 body .context .name {

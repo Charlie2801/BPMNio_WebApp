@@ -520,29 +520,29 @@ def nextElm_request(model, name, desc):
 
 
 
-def text_request(text, model, name, desc):
+def text_request(text, model, desc):
     print(model)
     context = [ {'role': "system", "content": "You are an Business Process Analyst"} ]
-    
-    if desc is None and name is None:
-        input = "consider the following business process: \n BPMN XML: " + model
-    elif desc is None:
-        input = "consider the following business process: \n Process Name: " + name + "\n BPMN XML: " + model
-    elif name is None:
-         input = "consider the following business process: \n BPMN XML: " + model + "\n Textual Description: " + desc
-    else:
-         input = "consider the following business process:\n Process Name: " + name + "\n BPMN XML: " + model + "\n Textual Description: " + desc
-
-
-
-    model =  {'role': 'user', 'content': str("Textual Description: " + desc)}
-    bpmn = {'role': 'user', 'content': str(model)}
-    text = {'role': 'user', 'content': text} 
-
     msg = context
-    msg.append(model)
-    msg.append(bpmn)
-    msg.append(text)
+    
+
+    if desc is None:
+        bpmn = {'role': 'user', 'content': str(model)}
+        text = {'role': 'user', 'content': text} 
+        msg.append(bpmn)
+        msg.append(text)
+
+    else:
+        model =  {'role': 'user', 'content': str("Textual Description: " + desc)}
+        bpmn = {'role': 'user', 'content': str(model)}
+        text = {'role': 'user', 'content': text} 
+        msg.append(model)
+        msg.append(bpmn)
+        msg.append(text)
+
+
+
+
     
     try:
         txt = openai.ChatCompletion.create(

@@ -61,7 +61,7 @@ def gpt_request():
         txt = request.form['txt']
         model = request.form['model']
 
-        print(session['name'])
+        #print(session['name'])
 
         if 'name' in session:
             name = session['name']
@@ -72,7 +72,7 @@ def gpt_request():
             desc = session['desc']
         else:
             desc = None
-        answer = openai_api.text_request(txt, model, name, desc)
+        answer = openai_api.text_request(txt, model, desc)
         print(answer)
         return answer
     

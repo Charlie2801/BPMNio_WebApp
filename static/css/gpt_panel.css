@@ -18,7 +18,7 @@
 .sidepanel a {
   padding: 8px 8px 8px 32px;
   text-decoration: none;
-  font-size: 11px;
+  font-size: 1vw;
   color: white;
   display: block;
   transition: 0.3s;
@@ -88,9 +88,9 @@ html {
 
 body .card {
   position:absolute;
-  height: 300px;
-  width: 47.5vw;
-  top: 260px;
+  height: 24.7vw;
+  width: 47.3vw;
+  top: 21.5vw;
   right: 0px;
   bottom: 0px;
   backdrop-filter: blur(calc(0.34375px * var(--rem)));
@@ -128,12 +128,12 @@ body .card #message-section::-webkit-scrollbar {
 }
 body .card #message-section {
   position: absolute;
-  top: 10px;
-  right: 150px;
-  width: 35vw;
+  top: 1vw;
+  right: 12.5vw;
+  width: 34vw;
   border-radius: 20px;
   background: #d2d2d2;
-  height: 240px;
+  height: 19vw;
   padding: 0 2.5vw;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -184,8 +184,8 @@ body .card #message-section .message {
 body .card #input-section {
   position: absolute;
   bottom: 5px;
-  right: 150px;
-  width: 35vw;
+  right: 12.5vw;
+  width: 34vw;
   z-index: 1;
   padding: 0 2.5vw;
   display: flex;
@@ -212,7 +212,7 @@ body .card #input-section input {
 
 body .card #chip_section {
   height: 100%; /* Specify a height */
-  width: 150px; /* 0 width - change this with JavaScript */
+  width: 12.5vw; /* 0 width - change this with JavaScript */
   position: absolute; /* Stay in place */
   left: 1002;
   right: 0;
@@ -256,7 +256,7 @@ body .suggestion_panel {
   position:fixed;
   height: 100%;
   width: 35vw;
-  right: 150px;
+  right: 12.3vw;
   bottom: 0px;
   backdrop-filter: blur(calc(0.34375px * var(--rem)));
   background: linear-gradient(180deg, #FCFCFC 0%, #FCFCFC 100%);
@@ -327,10 +327,10 @@ body .suggestion_panel .close {
 /* Context Container */
 body .context {
   position:absolute;
-  height: 350px;
+  height: 28.5vw;
   width: 35vw;
-  top: 80px;
-  right: 435px;
+  top: 8vw;
+  right: 32vw;
   bottom: 0px;
   backdrop-filter: blur(calc(0.34375px * var(--rem)));
   background: linear-gradient(180deg, #FCFCFC 0%, #FCFCFC 100%);

@@ -170,6 +170,7 @@ function debounce(fn, timeout) {
 
 
 //Event Listener Request Form
+/*
 const request_form = document.getElementById('text');
 request_form.addEventListener('submit', function (event) {
   event.preventDefault();
@@ -185,6 +186,7 @@ request_form.addEventListener('submit', function (event) {
     });
   });
 });
+*/
 
 
 // Label Suggestions
@@ -195,32 +197,44 @@ label_button.addEventListener('click', function (event) {
   document.getElementById("wait").style.display="block";
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
-      type: 'POST',
-      url: '/label_suggestion',
-      data: {model:xml}
-    }).done(function(response){
-      product = response;
+    try {
+      $.ajax({
+        type: 'POST',
+        url: '/label_suggestion',
+        data: {model:xml}
+      }).done(function(response){
+        product = response;
+  
+        var table = document.getElementById('labels');
+        table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
+  
+        console.log(product)
+  
+        for(let i = 0; i < product.length; i++){
+          var row = table.insertRow(-1);
+          var cell_old = row.insertCell(0);
+          var cell_new = row.insertCell(1);
+          cell_old.innerHTML = product[i][1];
+          cell_new.innerHTML = product[i][0];
+        };
+  
+        document.getElementById("inconsistency_field").style.display="none";
+        document.getElementById("label_suggestion").style.display="block";
+        document.getElementById("noAssociation").style.display="none";
+        document.getElementById("wait").style.display="none";
+    
+      });
+    }
 
-      var table = document.getElementById('labels');
-      table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
-
-      console.log(product)
-
-      for(let i = 0; i < product.length; i++){
-        var row = table.insertRow(-1);
-        var cell_old = row.insertCell(0);
-        var cell_new = row.insertCell(1);
-        cell_old.innerHTML = product[i][1];
-        cell_new.innerHTML = product[i][0];
-      };
-
+    catch {
       document.getElementById("inconsistency_field").style.display="none";
       document.getElementById("label_suggestion").style.display="block";
       document.getElementById("noAssociation").style.display="none";
       document.getElementById("wait").style.display="none";
-  
-    });
+
+      alert("GPT Request Error: Request could not be handled");
+    }
+
   });
 });
 
@@ -432,18 +446,26 @@ function output(input) {
   addPendingAnimation();
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
-      type: 'POST',
-      url: '/gpt_request',
-      data: {txt: input, model:xml}
-    }).done(function(response){
-      product = response;
+    try{
+      $.ajax({
+        type: 'POST',
+        url: '/gpt_request',
+        data: {txt: input, model:xml}
+      }).done(function(response){
+        product = response;
+        document.getElementById("pending").remove();
+        product = formatHTMLOutput(product);
+        console.log(product);
+        addBotChat(product);
+    
+      });
+    }
+
+    catch{
       document.getElementById("pending").remove();
-      product = formatHTMLOutput(product);
-      console.log(product);
-      addBotChat(product);
-  
-    });
+      addBotChat("GPT Request Error: Request could not be handled.");
+    }
+
   });
 
 }

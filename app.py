@@ -5,10 +5,11 @@ import config
 from datasets import load_dataset
 
 modelhub_dataset = load_dataset("patriziobellan/PET", name='relations-extraction')
-#from models import Person
-
 
 #print(openai_api.getPerformerExample(modelhub_dataset, 0)[0])
+#test_activities = openai_api.getPerformerExample(modelhub_dataset, 6)[2]
+#test = [" ".join(item) for item in test_activities]
+#print(", ".join(test))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'random_1'
@@ -41,15 +42,18 @@ def context():
             session['actors'] = resp[2]
             session['activities'] = resp[1]
             session['associations'] = resp[3]
+            session['full_activities'] = resp[4]
             return resp
+        
 
 @app.route('/inconsistencies', methods = ['POST'])
 def inconsistencies():
-    print("start")
-    if 'activities' in session and 'desc' in session:
-        print("check")
+    if 'activities' in session:
         model = request.form['model']
-        return openai_api.getInconsistencies(session['activities'], model)
+        print(type(session['full_activities']))
+        activities = [sublist[1] for sublist in session['full_activities']]
+        activities = ', '.join(activities)
+        return openai_api.getInconsistencies(activities, model)
     else:
         return "Inconsistencies cannot be checked: <br> No Textual Description of Process provided yet Click on 'Provide Context'"
 

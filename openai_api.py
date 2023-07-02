@@ -179,7 +179,6 @@ def getPerformerExample(modelhub_dataset , index):
             
             activity_sentence.append([act, data])
 
-    print(activity_sentence)
     return([activities, uses, activity_sentence])
 
 
@@ -365,20 +364,46 @@ def createHTMLText(actors, activities, txt):
     return txt
 
 
-
-def getInconsistencies(activities, model):
-    with open("C:/Users/charl/OneDrive/Desktop/BPMNio_WebApp/static/resources/index_3_inconsistency.txt", "r") as file:
+'''
+def getInconsistencies_old(activities, model):
+    script_dir = os.path.dirname(__file__)
+    print(script_dir)
+    rel_path = "/static/resources/index_3_inconsistency.txt"
+    abs_file_path = script_dir + rel_path
+    with open(abs_file_path, "r") as file:
         example_xml = file.read().rstrip()
-    ex_activities = "select underwriters, provide advice, buy issue, resell issue, prepare registration statement, check compliance with blue-sky laws, firm up issue price, arrange road show, fix issue price, enter into firm commitment, offer stock to public"
-    ex_result = "The following tasks are not depicted within the provided BPMN: <br> 1. prepare registration statement <br> 2. check compliance with blue-sky laws <br> 3. firm up issue price <br> 4. arrange road show <br> 5. fix issue price <br> 6. enter into firm commitment <br> 7. offer stock to public"
 
-    ex_prompt = "Which of these tasks (" + ex_activities + ") are not depicted within the BPMN? BPMN: " + example_xml 
-    prompt = "Which of these tasks (" + activities + ") are not depicted within the BPMN? BPMN: " +model 
+    ex_labels = getModelLabels(example_xml)
+    ex_activities = "select underwriters, provide advice, buy issue, resell issue, prepare registration statement, check compliance with blue-sky laws, firm up issue price, arrange road show, fixes issue price, enter into firm commitment, offer stock to public"
+    ex_result = "The following tasks are not depicted within the provided BPMN: <br> 1. prepare registration statement <br> 2. check compliance with blue-sky laws <br> 3. firm up issue price <br> 4. arrange road show <br> 5. fix issue price <br> 6. enter into firm commitment <br> 7. offer stock to public"
+    ex_prompt = "Which of the tasks have no corresponding equivalent within the activities, give an enumeration? Activities: ###" + ex_activities +  "###; Tasks: ###" + ex_labels +"###"
+
+    """
+    ex_activities_two = "requests a device takeover bid, sends a tender for the equipment takeover, places an order, confirms the order of the MPON, sends the master data"
+    ex_labels_two = "Send tender, request bid, order placement, confirm orderm send master data"
+    ex_result_two = "All of the tasks are depicted within the model."
+    ex_prompt_two = "Which of these tasks (" + ex_activities_two + ") has no corresponding equivalent within the task list, give an enumeration? Task List: " + ex_labels_two
+
+    """
+    ex_activities_two = "requests a device takeover bid, sends a tender for the equipment takeover, places an order, confirms the order of the MPON, sends the master data"
+    ex_labels_two = "Send tender, request bid, order placement, confirm orderm send master data"
+    ex_result_two = "All of the tasks are depicted within the model."
+    ex_prompt_two = "Which of the tasks have no corresponding equivalent within the activities, give an enumeration? Activities: ###" + ex_activities_two +  "###; Tasks: ###" + ex_labels_two +"###"
+
+
+
+    activity_labels = getModelLabels(model)
+
+    print(activity_labels)
+
+    prompt = "Which of the tasks have no corresponding equivalent within the activities, give an enumeration? Activities: ###" + activity_labels +  "###; Tasks: ###" + activities +"###"
 
     messages = [        
         {"role": "system", "content": "You are a business process modeling specialist"},
         {"role": "user", "content": ex_prompt},
         {"role": "assistant", "content": ex_result},
+        {"role": "user", "content": ex_prompt_two},
+        {"role": "assistant", "content": ex_result_two},
         {"role": "user", "content": prompt},
                 ]
     txt = openai.ChatCompletion.create(
@@ -388,10 +413,49 @@ def getInconsistencies(activities, model):
     )
 
     return txt['choices'][0]['message']['content']
+'''
+
+def getInconsistencies(activities, model):
+    activity_labels = getModelLabels(model)
+    print(activity_labels)
+    answers = []
+    activities = activities.split(", ")
+    print(activities)
+    ex_list = "requests a device takeover bid, sends a tender for the equipment takeover, places an order, confirms the order of the MPON, sends the master data"
+
+    for i in activities:
+        print(i + ":")
+        prompt = "Activity v: ###" + i + "### List x: ###" + activity_labels + "###" 
+        messages = [        
+            {"role": "system", "content": "Determine if a given activity v is present within a list x."},
+            {"role": "user", "content": "You are provided with a list x that contains various activities. Your task is to check if a given activity v is present within the list. The activities in the list may not have a one-to-one equivalent to v, but if they have a similar meaning, it should be considered a match. You are only allowed to respond with 'Yes' or 'No' to indicate whether v is present in x"},
+
+            {"role": "user", "content":  "Activity v: ###confirm order### List x: ###" + ex_list + "###" },
+            {"role": "assistant", "content": "Yes"},
+            {"role": "user", "content":  "Activity v: ###order retrieval### List x: ###" + ex_list + "###" },
+            {"role": "assistant", "content": "No"},
+            {"role": "user", "content": prompt},
+                    ]
+        txt = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages = messages,
+        temperature=0
+        )
+
+        print(txt['choices'][0]['message']['content'])
+
+        if(txt['choices'][0]['message']['content'] == "No"):
+            answers.append("<br>- " + i)
+    
+    if(len(answers) == 0):
+        response = "All of the tasks described within the process desciption are depicted within the model."
+    else:
+        response = "The following tasks may not be depicet within the BPMN:" + " ".join(answers)
+
+    return response
 
 
-
-def pmgSix_old(xml):
+def getModelLabels(xml):
     root = ET.fromstring(xml)
     tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process']
     labels = []
@@ -403,6 +467,10 @@ def pmgSix_old(xml):
                 labels.append(item.attrib['name'])
 
     labels = ', '.join(labels)
+    return labels
+
+def pmgSix_old(xml):
+    labels = getModelLabels(xml)
 
     example_input = 'invoice received, confirm status, cancel reservation, reservation canceling, accept, accept card, send application, form submition'
     example_output = 'invoice received, reservation canceling, accept, form submition.'

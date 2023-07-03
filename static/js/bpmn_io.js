@@ -197,7 +197,6 @@ label_button.addEventListener('click', function (event) {
   document.getElementById("wait").style.display="block";
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    try {
       $.ajax({
         type: 'POST',
         url: '/label_suggestion',
@@ -223,17 +222,15 @@ label_button.addEventListener('click', function (event) {
         document.getElementById("noAssociation").style.display="none";
         document.getElementById("wait").style.display="none";
     
+      }).fail(async function(response){
+        document.getElementById("inconsistency_field").style.display="none";
+        document.getElementById("label_suggestion").style.display="block";
+        document.getElementById("noAssociation").style.display="none";
+        document.getElementById("wait").style.display="none";
+  
+        alert("GPT Request Error: " + response);
+
       });
-    }
-
-    catch {
-      document.getElementById("inconsistency_field").style.display="none";
-      document.getElementById("label_suggestion").style.display="block";
-      document.getElementById("noAssociation").style.display="none";
-      document.getElementById("wait").style.display="none";
-
-      alert("GPT Request Error: Request could not be handled");
-    }
 
   });
 });
@@ -336,10 +333,13 @@ context_send.addEventListener('click', function (event) {
         //document.getElementById("noAssociation").innerHTML =  response[3];
       }
 
-    } catch{
+    } catch(err){
       document.getElementById("noText").innerHTML = "No successful response: \n" + response;
       document.getElementById("wait").style.display="none";
     };
+  }).fail(async function(response){
+    document.getElementById("noText").innerHTML = "No successful response: \n" + response;
+    document.getElementById("wait").style.display="none";
   });
 
 });
@@ -351,7 +351,7 @@ inconsistencies.addEventListener('click', function (event) {
   document.getElementById("wait").style.display="block";
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    try{ $.ajax({
+    $.ajax({
       type: 'POST',
       url: '/inconsistencies',
       data: {model:xml}
@@ -362,11 +362,10 @@ inconsistencies.addEventListener('click', function (event) {
         document.getElementById("label_suggestion").style.display="none";
         document.getElementById("wait").style.display="none";
       
+    }).fail(async function(response){
+      document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
+      document.getElementById("wait").style.display="none";
     });
-  } catch{
-    document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
-    document.getElementById("wait").style.display="none";
-  }
 
 });
 });
@@ -445,7 +444,6 @@ function output(input) {
   addPendingAnimation();
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    try{
       $.ajax({
         type: 'POST',
         url: '/gpt_request',
@@ -457,14 +455,10 @@ function output(input) {
         console.log(product);
         addBotChat(product);
     
+      }).fail(async function(response){
+        document.getElementById("pending").remove();
+        addBotChat("GPT Request Error: " + response);
       });
-    }
-
-    catch{
-      document.getElementById("pending").remove();
-      addBotChat("GPT Request Error: Request could not be handled.");
-    }
-
   });
 
 }

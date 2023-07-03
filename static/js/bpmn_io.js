@@ -316,7 +316,9 @@ context_send.addEventListener('click', function (event) {
 
         // add associations to table 
         var associations = response[4];
+        console.log(response)
         var table = document.getElementById('activities');
+        table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
 
         for(let i = 0; i < associations.length; i++){
           var row = table.insertRow(-1);

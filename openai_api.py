@@ -229,15 +229,15 @@ def getActivities(modelhub_dataset, txt):
     temperature=0
     )   
 
-    activities = response_activity['choices'][0]['message']['content']
-    prompt = "Textual Description: " + txt + "\n Activities: " + activities
+    activities_old = response_activity['choices'][0]['message']['content']
+    prompt = "Textual Description: " + txt + "\n Activities: " + activities_old
 
     # make get participant association request
     print("Second Request")
     response_association = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
-        {"role": "system", "content": "Who is the participant performing activity X in the process model?: "},
+        {"role": "system", "content": "Who is the participant performing activity X in the process model? The output should be a list of associations. The associations should look as follows: 'participant -> activity': "},
         {"role": "user", "content": ex_in_one},
         {"role": "assistant", "content": ex_sol_one},
         {"role": "user", "content": ex_in_two},
@@ -258,6 +258,11 @@ def getActivities(modelhub_dataset, txt):
         performer[i] = performer[i].replace("a ", "")
         performer[i] = performer[i].replace("an ", "")
 
+    activities = response_association['choices'][0]['message']['content']
+    activities = activities.replace("->", ", ")
+    activities = activities.split(', ')
+    activities = activities[1::2]
+    activities = ", ".join(activities)
 
 
     # make get activity data object request
@@ -276,7 +281,7 @@ def getActivities(modelhub_dataset, txt):
     response_activity_data = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
-        {"role": "system", "content": "Consider the following activities within the provided process description, what are the objects used for each activity?: "},
+        {"role": "system", "content": "Consider the following activities within the provided process description, what are the objects used for each activity? Let the activities remain exactly the same in your output. "},
         {"role": "user", "content": ex_prompt},
         {"role": "assistant", "content": ex_activity_data_one_sol},
         {"role": "user", "content": prompt}
@@ -294,13 +299,16 @@ def getActivities(modelhub_dataset, txt):
     #check associations for activities and replace with activity + activity data
     #activities_split = activities.split(", ")
     activity_data = response_activity_data['choices'][0]['message']['content']
+
+
     activity_data_split = activity_data.split(', ')
     activity_data_split = [i.split(' - ') for i in activity_data_split]
     associations_split = associations.split(', ')    #[ ['the sales department->creates'], ['a member of the sales department->rejects'] ]
-
     associations_split = [item.split('->') for item in associations_split] #[ ['the sales department', 'creates'], ['a member of the sales department', 'rejects'] ]
+    
     act = activity_data_split
     x = [item[0] for item in act]
+
     
     for i in range(len(associations_split)):
         if associations_split[i][1] in x:
@@ -324,30 +332,41 @@ def getActivities(modelhub_dataset, txt):
     associations = associations.replace(", ", " <br>")
 
 
-    print(activity_data_split)
 
-    resp_txt = createHTMLText(activities= activity_data_split, actors=performer, txt=txt)
+    resp_txt = createHTMLText(activities = activities_old, activity_data= activity_data_split, actors=performer, txt=txt)
 
     print("finished")
+    
         
     response = [resp_txt, activities, performer, associations, associations_new]
+    print("Resp Activities")
+    print(activities)
+    print("Resp Performer")
+    print(performer)
+    print("Associations")
+    print(associations)
+    print("Associations new")
+    print(associations_new)
 
 
     return response
 
 
 
-def createHTMLText(actors, activities, txt):
+def createHTMLText(actors, activities, activity_data, txt):
+    activities = activities.split(", ")
     for i in actors:
         replace = "<span title='Actor'><mark  style='background-color:#d1d581;'>"+i+"</mark></span>"
         txt = txt.lower().replace(i.lower(), replace).rstrip()
 
     for i in range(len(activities)):
-        x = activities[i][0]
+        x = activities[i]
         replace = "<span title='Activity'><mark style='background-color:#aed581;'>"+x+"</mark></span>"
         txt = txt.lower().replace(x.lower(), replace).rstrip()
 
-        x = activities[i][1]
+
+    for i in range(len(activity_data)):
+        x = activity_data[i][1]
         replace = "<span title='Activity'><mark style='background-color:#aed581;'>"+x+"</mark></span>"
         txt = txt.lower().replace(x.lower(), replace).rstrip()
  

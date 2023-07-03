@@ -12,7 +12,7 @@ modelhub_dataset = load_dataset("patriziobellan/PET", name='relations-extraction
 #print(", ".join(test))
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'random_1'
+app.config['SECRET_KEY'] = 'random3'
 
 
 

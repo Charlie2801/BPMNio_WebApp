@@ -351,25 +351,22 @@ inconsistencies.addEventListener('click', function (event) {
   document.getElementById("wait").style.display="block";
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
+    try{ $.ajax({
       type: 'POST',
       url: '/inconsistencies',
       data: {model:xml}
     }).done(async function(response){
-      try{
         document.getElementById("inconsistency_field").innerHTML = response;
         document.getElementById("inconsistency_field").style.display="block";
         document.getElementById("noAssociation").style.display="none";
         document.getElementById("label_suggestion").style.display="none";
         document.getElementById("wait").style.display="none";
-
-      } catch{
-        document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
-        document.getElementById("wait").style.display="none";
-      }
       
-
     });
+  } catch{
+    document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
+    document.getElementById("wait").style.display="none";
+  }
 
 });
 });

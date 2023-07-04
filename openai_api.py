@@ -474,9 +474,16 @@ def getInconsistencies(activities, model):
     return response
 
 
-def getModelLabels(xml):
+def getModelLabels(xml, case):
     root = ET.fromstring(xml)
-    tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process']
+
+    # For label convention checking only the labels of Acitvities, nothing else
+    if case == 1:
+        tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}lane', '{http://www.omg.org/spec/BPMN/20100524/MODEL}parallelGateway', '{http://www.omg.org/spec/BPMN/20100524/MODEL}sequenceFlow', '{http://www.omg.org/spec/BPMN/20100524/MODEL}exclusiveGateway', '{http://www.omg.org/spec/BPMN/20100524/MODEL}startEvent', '{http://www.omg.org/spec/BPMN/20100524/MODEL}endEvent', '{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process', ]
+
+    else:
+        tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process']
+
     labels = []
 
     # get Activity labels of BPMN XML
@@ -536,17 +543,9 @@ def pmgSix_old(xml):
 
 
 def getLabelSuggestion(xml, desc):
-    root = ET.fromstring(xml)
-    tagList = ['{http://www.omg.org/spec/BPMN/20100524/MODEL}participant', '{http://www.omg.org/spec/BPMN/20100524/MODEL}process']
-    labels = []
+    labels =  getModelLabels(xml, 1)
 
-    # get Activity labels of BPMN XML
-    for item in root.iter():
-        if item.tag not in tagList:
-            if 'name' in item.attrib:
-                labels.append(item.attrib['name'])
-
-    #labels = ', '.join(labels)
+    labels = labels.split(", ")
     resp = []
 
     for i in labels:

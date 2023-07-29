@@ -169,26 +169,7 @@ function debounce(fn, timeout) {
 }
 
 
-//Event Listener Request Form
-/*
-const request_form = document.getElementById('text');
-request_form.addEventListener('submit', function (event) {
-  event.preventDefault();
-  const txt = request_form.text_field.value;
-  modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
-      type: 'POST',
-      url: '/gpt_request',
-      data: {txt: txt, model:xml}
-    }).done(function(response){
-      document.getElementById("gpt_answer").innerHTML = response;
-  
-    });
-  });
-});
-*/
-
-
+// OpenAI API Requests: ////////////////////////////////////////////////
 // Label Suggestions
 const label_button = document.getElementById('labels_button');
 label_button.addEventListener('click', function (event) {
@@ -237,60 +218,7 @@ label_button.addEventListener('click', function (event) {
 
 
 
-  //Best Practices 7PMG
-/*
-  const pmg = document.getElementById('7PMG');
-  pmg.addEventListener('click', function (event) {
-    event.preventDefault();
-    let product;
-
-    addUserChat("Does the Business Process Model adhere to the 7PMG?");
-    addPendingAnimation();
-
-    modeler.saveXML({ format: true }, function (err, xml) {
-      $.ajax({
-        type: 'POST',
-        url: '/best_practices',
-        data: {model:xml}
-      }).done(function(response){
-        document.getElementById("pending").remove();
-        product = response;
-        addBotChat(product);
-    
-      });
-    });
-  });
-
-*/
-/*
-
-const predict_form = document.getElementById("predict_next");
-predict_form.addEventListener('click', function (event) {
-  event.preventDefault();
-  modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
-      type: 'POST',
-      url: '/predict_next',
-      data: {model:xml}
-    }).done(async function(response){
-      try{
-        await modeler.importXML(response);
-      } catch{
-        document.getElementById("gpt_answer_2").innerHTML = "No successful response: \n" + response;
-      }
-      
-
-    });
-  });
-});
-
-*/
-
-
-// Best Practices: 7PMG
-
-
-//context form
+//Information Extraction Context Form
 const context_send = document.getElementById("send_context");
 context_send.addEventListener('click', function (event) {
   event.preventDefault();
@@ -330,7 +258,6 @@ context_send.addEventListener('click', function (event) {
         document.getElementById("suggestion_buttons").style.display="block";
         document.getElementById("wait").style.display="none";
 
-        //document.getElementById("noAssociation").innerHTML =  response[3];
       }
 
     } catch(err){
@@ -411,7 +338,8 @@ function providedPrompts(index){
   input != "" && output(input);
 }
 
-//chatbot
+
+//Conversational Virtual Assistant
 const label = document.getElementById("sendMessage");
 label.addEventListener('click', function (event) {
   event.preventDefault();

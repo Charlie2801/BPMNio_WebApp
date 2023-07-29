@@ -10,7 +10,7 @@
   "devDependencies": {
     "@types/bpmn-moddle": "^5.1.6",
     "raw-loader": "^4.0.2",
-    "webpack": "^5.83.1",
+    "webpack": "^5.88.1",
     "webpack-cli": "^5.1.1"
   }
 }

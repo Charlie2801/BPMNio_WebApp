@@ -15,7 +15,7 @@ document.getElementById("wait").style.display="none";
 
 
 function openNav() {
-    document.getElementById("mySidepanel").style.width = "150px";
+    document.getElementById("mySidepanel").style.width = "12.3vw";
     document.getElementById("suggestion_panel").style.display="block";
     document.getElementById("panel_board").style.display="block";
   }
@@ -24,7 +24,7 @@ function openNav() {
   function closeNav() {
     document.getElementById("text").style.display="none";
     document.getElementById("plain_text_answer").style.display="none";
-    document.getElementById("mySidepanel").style.width = "0";
+    document.getElementById("mySidepanel").style.width = "0vw";
     document.getElementById("suggestion_panel").style.display="none";
   } 
 

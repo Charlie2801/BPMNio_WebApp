@@ -170,6 +170,7 @@ function debounce(fn, timeout) {
 
 
 //Event Listener Request Form
+/*
 const request_form = document.getElementById('text');
 request_form.addEventListener('submit', function (event) {
   event.preventDefault();
@@ -185,6 +186,7 @@ request_form.addEventListener('submit', function (event) {
     });
   });
 });
+*/
 
 
 // Label Suggestions
@@ -195,32 +197,41 @@ label_button.addEventListener('click', function (event) {
   document.getElementById("wait").style.display="block";
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
-      type: 'POST',
-      url: '/label_suggestion',
-      data: {model:xml}
-    }).done(function(response){
-      product = response;
-
-      var table = document.getElementById('labels');
-      table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
-
-      console.log(product)
-
-      for(let i = 0; i < product.length; i++){
-        var row = table.insertRow(-1);
-        var cell_old = row.insertCell(0);
-        var cell_new = row.insertCell(1);
-        cell_old.innerHTML = product[i][1];
-        cell_new.innerHTML = product[i][0];
-      };
-
-      document.getElementById("inconsistency_field").style.display="none";
-      document.getElementById("label_suggestion").style.display="block";
-      document.getElementById("noAssociation").style.display="none";
-      document.getElementById("wait").style.display="none";
+      $.ajax({
+        type: 'POST',
+        url: '/label_suggestion',
+        data: {model:xml}
+      }).done(function(response){
+        product = response;
   
-    });
+        var table = document.getElementById('labels');
+        table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
+  
+        console.log(product)
+  
+        for(let i = 0; i < product.length; i++){
+          var row = table.insertRow(-1);
+          var cell_old = row.insertCell(0);
+          var cell_new = row.insertCell(1);
+          cell_old.innerHTML = product[i][1];
+          cell_new.innerHTML = product[i][0];
+        };
+  
+        document.getElementById("inconsistency_field").style.display="none";
+        document.getElementById("label_suggestion").style.display="block";
+        document.getElementById("noAssociation").style.display="none";
+        document.getElementById("wait").style.display="none";
+    
+      }).fail(async function(response){
+        document.getElementById("inconsistency_field").style.display="none";
+        document.getElementById("label_suggestion").style.display="block";
+        document.getElementById("noAssociation").style.display="none";
+        document.getElementById("wait").style.display="none";
+  
+        alert("GPT Request Error: " + response);
+
+      });
+
   });
 });
 
@@ -302,7 +313,9 @@ context_send.addEventListener('click', function (event) {
 
         // add associations to table 
         var associations = response[4];
+        console.log(response)
         var table = document.getElementById('activities');
+        table.getElementsByTagName("tbody")[0].innerHTML = table.rows[1].innerHTML;
 
         for(let i = 0; i < associations.length; i++){
           var row = table.insertRow(-1);
@@ -320,10 +333,13 @@ context_send.addEventListener('click', function (event) {
         //document.getElementById("noAssociation").innerHTML =  response[3];
       }
 
-    } catch{
+    } catch(err){
       document.getElementById("noText").innerHTML = "No successful response: \n" + response;
       document.getElementById("wait").style.display="none";
     };
+  }).fail(async function(response){
+    document.getElementById("noText").innerHTML = "No successful response: \n" + response;
+    document.getElementById("wait").style.display="none";
   });
 
 });
@@ -340,19 +356,15 @@ inconsistencies.addEventListener('click', function (event) {
       url: '/inconsistencies',
       data: {model:xml}
     }).done(async function(response){
-      try{
         document.getElementById("inconsistency_field").innerHTML = response;
         document.getElementById("inconsistency_field").style.display="block";
         document.getElementById("noAssociation").style.display="none";
         document.getElementById("label_suggestion").style.display="none";
         document.getElementById("wait").style.display="none";
-
-      } catch{
-        document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
-        document.getElementById("wait").style.display="none";
-      }
       
-
+    }).fail(async function(response){
+      document.getElementById("inconsistency_field").innerHTML = "No successful response: \n" + response;
+      document.getElementById("wait").style.display="none";
     });
 
 });
@@ -389,10 +401,10 @@ weak.addEventListener('click', function (event) {
 
 function providedPrompts(index){
   var prompts = [
-    "What questions does the process raise that remain unanswered? Provide a enumeration",
+    "What questions does the process raise that remain unanswered? Provide an enumeration",
     "Which process tasks can be automated? How can this automation be implemented?",
-    "Provide possibilites to enhance the process.",
-    "Does the process currently display any weaknesses? Provide a enumeration"
+    "Provide possibilities to enhance the process.",
+    "Does the process currently display any weaknesses? Provide an enumeration"
   ];
 
   var input = prompts[index];
@@ -432,34 +444,37 @@ function output(input) {
   addPendingAnimation();
 
   modeler.saveXML({ format: true }, function (err, xml) {
-    $.ajax({
-      type: 'POST',
-      url: '/gpt_request',
-      data: {txt: input, model:xml}
-    }).done(function(response){
-      product = response;
-      document.getElementById("pending").remove();
-      product = formatHTMLOutput(product);
-      console.log(product);
-      addBotChat(product);
-  
-    });
+      $.ajax({
+        type: 'POST',
+        url: '/gpt_request',
+        data: {txt: input, model:xml}
+      }).done(function(response){
+        product = response;
+        document.getElementById("pending").remove();
+        product = formatHTMLOutput(product);
+        console.log(product);
+        addBotChat(product);
+    
+      }).fail(async function(response){
+        document.getElementById("pending").remove();
+        addBotChat("GPT Request Error: " + response);
+      });
   });
 
 }
 
-function formatHTMLOutput(product){
-  product = product.replace(/- /g, "<br>-");
-  product = product.replace(/0/g, "<br>0");
-  product = product.replace(/1/g, "<br>1");
-  product = product.replace(/2/g, "<br>2");
-  product = product.replace(/3/g, "<br>3");
-  product = product.replace(/4/g, "<br>4");
-  product = product.replace(/5/g, "<br>5");
-  product = product.replace(/6/g, "<br>6");
-  product = product.replace(/7/g, "<br>7");
-  product = product.replace(/8/g, "<br>8");
-  product = product.replace(/9/g, "<br>9");
+function formatHTMLOutput(product){ 
+  //product = product.replace(/- /g, "<br>-");
+  product = product.replace(/10./g, "<br>10.");
+  product = product.replace(/1./g, "<br>1.");
+  product = product.replace(/2./g, "<br>2.");
+  product = product.replace(/3./g, "<br>3.");
+  product = product.replace(/4./g, "<br>4.");
+  product = product.replace(/5./g, "<br>5.");
+  product = product.replace(/6./g, "<br>6.");
+  product = product.replace(/7./g, "<br>7.");
+  product = product.replace(/8./g, "<br>8.");
+  product = product.replace(/9./g, "<br>9.");
 
   return product
 

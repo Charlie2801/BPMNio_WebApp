@@ -434,7 +434,7 @@ def getInconsistencies_old(activities, model):
 '''
 
 def getInconsistencies(activities, model):
-    activity_labels = getModelLabels(model)
+    activity_labels = getModelLabels(model, 0)
     print(activity_labels)
     answers = []
     activities = activities.split("; ")

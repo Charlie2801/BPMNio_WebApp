@@ -1,15 +1,17 @@
 # Starting the BPMNio_WebApp
-If you do not have Python installed on your device, please do so. The program is developed using Python version 3.11.3[^1]  <br>
+If you do not have Python and pip installed on your device, please do so. The program is developed using Python version 3.11.3[^1]  <br>
 For the tutorial, Visual Studio Code[^2] is used as an IDE and Windows as OS <br>
 Please add your individual OpenAI API key at the 5th line of the Script openai_api.py, else API calls will not work.
-> api_key = "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"
+> api_key = <your_key>
 
-1. Install the 'Python' extension for Visual Studio (recommended automatically)
-2. Create a virtual environment:
-pip install venv:
-> pip install virtualenv
-To use venv in the project, in your terminal, run the following command in the root folder of the project:
-> python -m venv venv
+0. Open the project in Visual Studio Code
+1. Install the 'Python' extension for Visual Studio
+2. Create a virtual environment:   <br>
+   pip install venv: 
+   > pip install virtualenv 
+   
+   To use venv in the project, in your terminal, run the following command in the root folder of the project:  
+   > python -m venv venv  
 4. Activate the virtual environment with the command
    > venv\Scripts\activate
 5. Install all requirements:
@@ -35,6 +37,18 @@ To use venv in the project, in your terminal, run the following command in the r
 
 ### GPT API:
 - Opens a GPT-3 chatbot.
+
+## Provide Context Functionalities: 
+If the user provides the process context, the tool automatically retrieves the activities
+found within the process description.
+- The user will have three new buttons “Inconsistencies”, “Activities”, and “Labeling.”
+- The user is then directed to “Activities” with the found information:
+o The process description is given out at the top of the assistant panel.
+o Activities are marked green, and actors are marked yellow within the
+description.
+o A table is provided holding the relations between each task and its associated
+performer.
+- By clicking on “Labeling” the user receives labeling suggestions for every task label in the current BPMN. The suggestions follow a verb-object labeling style.
 
 ## GPT API Chatbot: 
 -	The chatbot takes all current information about the business process as context (BPMN, textual description, process name)

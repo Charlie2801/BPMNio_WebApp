@@ -102,7 +102,7 @@ def prepareActorExample(data, text, type):
                 tokens.append(token)
         
 
-    tokens = ', '.join(tokens)
+    tokens = '; '.join(tokens)
     return tokens
 
 
@@ -184,28 +184,28 @@ def getPerformerExample(modelhub_dataset , index):
 
 def getActivities(modelhub_dataset, txt):
     # prepare example 1:
-    prepExample = getPerformerExample(modelhub_dataset, 1)
+    prepExample = getPerformerExample(modelhub_dataset, 19)
     ex_sol_one = prepExample[1]
-    ex_sol_one = ', '.join(ex_sol_one)
+    ex_sol_one = '; '.join(ex_sol_one)
 
-    ex_in_one_desc = modelhub_dataset['test'][1]['tokens']
+    ex_in_one_desc = modelhub_dataset['test'][19]['tokens']
     ex_in_one_desc = ' '.join(ex_in_one_desc)
 
-    ex_in_one_activities = ', '.join(prepExample[0])
+    ex_in_one_activities = '; '.join(prepExample[0])
 
-    ex_in_one = "Textual Description: " + ex_in_one_desc + " \n Activities: " + ex_in_one_activities
+    ex_in_one = "Consider the following process: Textual Description: ### " + ex_in_one_desc + "### \n Activities: ### " + ex_in_one_activities + " ###"
 
     # prepare example 2:
-    prepExample_two = getPerformerExample(modelhub_dataset, 7)
+    prepExample_two = getPerformerExample(modelhub_dataset, 17)
     ex_sol_two = prepExample_two[1]
-    ex_sol_two = ', '.join(ex_sol_two)
+    ex_sol_two = '; '.join(ex_sol_two)
 
-    ex_in_two_desc = modelhub_dataset['test'][7]['tokens']
+    ex_in_two_desc = modelhub_dataset['test'][17]['tokens']
     ex_in_two_desc = ' '.join(ex_in_two_desc)
 
-    ex_in_two_activities = ', '.join(prepExample[0])
+    ex_in_two_activities = '; '.join(prepExample[0])
 
-    ex_in_two = "Textual Description: " + ex_in_two_desc + " \n Activities: " + ex_in_two_activities
+    ex_in_two = "Consider the following process: Textual Description: ### " + ex_in_two_desc + "###  \n Activities: " + ex_in_two_activities + " ###"
 
 
     # conduct request    
@@ -218,26 +218,31 @@ def getActivities(modelhub_dataset, txt):
     response_activity = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
-        {"role": "system", "content": "List the activities of the process: "},
-        {"role": "user", "content": ex_in_one_desc},
+        #{"role": "system", "content": "Consider the context of business process management and process modeling."},
+        {"role": "user", "content": "Consider the following process: ### " + ex_in_one_desc + "###"},
+        {"role": "user", "content": "List the activities of the process. An activity is a single word. Follow the desired format: ### <semicolon_separated_list_of_activities> ###"},
         {"role": "assistant", "content": ex_in_one_activities},
-        {"role": "user", "content": ex_in_two_desc},
+        {"role": "user", "content": "Consider the following process: ### " + ex_in_two_desc + "###"},
+        {"role": "user", "content": "List the activities of the process. An activity is a single word. Follow the desired format: ### <semicolon_separated_list_of_activities> ###"},
         {"role": "assistant", "content": ex_in_two_activities},
-        {"role": "user", "content": txt}
+        {"role": "user", "content": "Consider the following process: ### " + txt + "###"},
+        {"role": "user", "content": "List the activities of the process. An activity is a single word. Follow the desired format: ### <semicolon_separated_list_of_activities> ###"},
     ],
     max_tokens=1000,
     temperature=0
     )   
 
+    print(response_activity['choices'][0]['message']['content'])
+
     activities_old = response_activity['choices'][0]['message']['content']
-    prompt = "Textual Description: " + txt + "\n Activities: " + activities_old
+    prompt = "Consider the following process: Textual Description: ### " + txt + "### \n Activities: " + activities_old + " ###"
 
     # make get participant association request
     print("Second Request")
     response_association = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
-        {"role": "system", "content": "Who is the participant performing activity X in the process model? The output should be a list of associations. The associations should look as follows: 'participant -> activity': "},
+        {"role": "system", "content": "Who is the participant performing activity X in the process model? The associations should look as follows: ###participant -> activity### If no participant is identified, the association should look like this: ### NULL -> activity ### Please output the desired format. Desired format: ###<semicolon_seperated_list_of_associations>###"},
         {"role": "user", "content": ex_in_one},
         {"role": "assistant", "content": ex_sol_one},
         {"role": "user", "content": ex_in_two},
@@ -249,8 +254,9 @@ def getActivities(modelhub_dataset, txt):
     ) 
 
     performer = response_association['choices'][0]['message']['content']
-    performer = performer.replace("->", ", ")
-    performer = performer.split(', ')
+    print(performer)
+    performer = performer.replace("->", "; ")
+    performer = performer.split('; ')
     performer = performer[::2]
     for i in range(0, len(performer)):
         performer[i] = performer[i].lower()
@@ -259,29 +265,29 @@ def getActivities(modelhub_dataset, txt):
         performer[i] = performer[i].replace("an ", "")
 
     activities = response_association['choices'][0]['message']['content']
-    activities = activities.replace("->", ", ")
-    activities = activities.split(', ')
+    activities = activities.replace("->", "; ")
+    activities = activities.split('; ')
     activities = activities[1::2]
-    activities = ", ".join(activities)
+    activities = "; ".join(activities)
 
 
     # make get activity data object request
     ex_activity_data_one_sol = []
     for i in range(len(prepExample[2])):
         data = prepExample[2]
-        ex_activity_data_one_sol.append(' - '.join(data[i]))
+        ex_activity_data_one_sol.append(' -> '.join(data[i]))
 
-    ex_prompt = "Process Description: " + ex_in_one_desc + ", Activities: " +', '.join([item[0] for item in data])
-    ex_activity_data_one_sol = ', '.join(ex_activity_data_one_sol)
+    ex_prompt = "Process Description: ###" + ex_in_one_desc + "### Activities: ###" + str('; '.join([item[0] for item in data]) + " ###")
+    ex_activity_data_one_sol = '; '.join(ex_activity_data_one_sol)
 
-    prompt = "Process Description: " + txt + ", Activities: " + activities
+    prompt = "Process Description: ###" + txt + "### Activities: ###" + activities + " ###"
         
 
     print("Third Request")
     response_activity_data = openai.ChatCompletion.create(
     model= "gpt-3.5-turbo-16k",
     messages = [
-        {"role": "system", "content": "Consider the following activities within the provided process description, what are the objects used for each activity? Let the activities remain exactly the same in your output. "},
+        {"role": "system", "content": "Consider the following activities within the provided process description, what are the objects used for each activity? Let the activities remain exactly the same in your output. The associations should look as follows: ### activity -> object ### Please follow the desired format. Desired format: ### <semicolon_seperated_list_of_associations> ###"},
         {"role": "user", "content": ex_prompt},
         {"role": "assistant", "content": ex_activity_data_one_sol},
         {"role": "user", "content": prompt}
@@ -294,6 +300,7 @@ def getActivities(modelhub_dataset, txt):
     #remove duplicates
     performer = list(dict.fromkeys(performer))
     associations = response_association['choices'][0]['message']['content']
+    print(response_activity_data['choices'][0]['message']['content'])
 
 
     #check associations for activities and replace with activity + activity data
@@ -301,13 +308,16 @@ def getActivities(modelhub_dataset, txt):
     activity_data = response_activity_data['choices'][0]['message']['content']
 
 
-    activity_data_split = activity_data.split(', ')
-    activity_data_split = [i.split(' - ') for i in activity_data_split]
-    associations_split = associations.split(', ')    #[ ['the sales department->creates'], ['a member of the sales department->rejects'] ]
+
+    activity_data_split = activity_data.split('; ')
+    activity_data_split = [i.split(' -> ') for i in activity_data_split]
+    associations_split = associations.split('; ')    #[ ['the sales department->creates'], ['a member of the sales department->rejects'] ]
     associations_split = [item.split('->') for item in associations_split] #[ ['the sales department', 'creates'], ['a member of the sales department', 'rejects'] ]
     
     act = activity_data_split
     x = [item[0] for item in act]
+
+    print(associations_split)
 
     
     for i in range(len(associations_split)):
@@ -316,20 +326,19 @@ def getActivities(modelhub_dataset, txt):
             x[index] = ""  #should not be called again, but index must stay the same
 
             obj = ' '.join(activity_data_split[index])
-            print(obj)
             associations_split[i][1] = obj
         
         associations_split[i] = '->'.join(associations_split[i])
 
 
     
-    associations = ', '.join(associations_split)
-    associations_new = associations.split(', ')
+    associations = '; '.join(associations_split)
+    associations_new = associations.split('; ')
     associations_new = [item.split("->") for item in associations_new]
 
         #associations = associations.replace(activity_data_split[i][0], obj)
 
-    associations = associations.replace(", ", " <br>")
+    associations = associations.replace("; ", " <br>")
 
 
 
@@ -339,22 +348,12 @@ def getActivities(modelhub_dataset, txt):
     
         
     response = [resp_txt, activities, performer, associations, associations_new]
-    print("Resp Activities")
-    print(activities)
-    print("Resp Performer")
-    print(performer)
-    print("Associations")
-    print(associations)
-    print("Associations new")
-    print(associations_new)
-
-
     return response
 
 
 
 def createHTMLText(actors, activities, activity_data, txt):
-    activities = activities.split(", ")
+    activities = activities.split("; ")
     for i in actors:
         replace = "<span title='Actor'><mark  style='background-color:#d1d581;'>"+i+"</mark></span>"
         txt = txt.lower().replace(i.lower(), replace).rstrip()
@@ -438,7 +437,7 @@ def getInconsistencies(activities, model):
     activity_labels = getModelLabels(model)
     print(activity_labels)
     answers = []
-    activities = activities.split(", ")
+    activities = activities.split("; ")
     print(activities)
     ex_list = "requests a device takeover bid, sends a tender for the equipment takeover, places an order, confirms the order of the MPON, sends the master data"
 
@@ -485,7 +484,7 @@ def getModelLabels(xml):
             if 'name' in item.attrib:
                 labels.append(item.attrib['name'])
 
-    labels = ', '.join(labels)
+    labels = '; '.join(labels)
     return labels
 
 def pmgSix_old(xml):
@@ -553,9 +552,12 @@ def getLabelSuggestion(xml, desc):
         print(i)
 
         msg = [
-                {"role": "system", "content": "You are a business process modeling expert"},
+                {"role": "system", "content": "Act as a business process analyst."},
                 {"role": "user", "content": "consider the following business process: " + desc},
-                {"role": "user", "content": "make a verb-object label out of: " + i + ". Only give the generated."}
+                {"role": "user", "content": "make a verb-object label out of the activity label X. Only provide a single suggestion. Omit explanations for your suggestion."},
+                {"role": "user", "content": "Activity label: ### Application refusal ###"},
+                {"role": "system", "content": "Refuse application"},
+                {"role": "user", "content": "Activity label: ### " + i + " ###"}
         ]
 
         messages = msg
@@ -609,22 +611,24 @@ def nextElm_request(model, name, desc):
 
 def text_request(text, model, desc):
     print(model)
-    context = [ {'role': "system", "content": "You are an Business Process Analyst"} ]
+    "Act as a business process analyst."
+    context = [ {'role': 'system', 'content': "Act as a business process analyst."} ]
     msg = context
-    
+
+    msg.append( {'role': 'user', 'content': "Whenerver you provide an answer, please explain and reason the assumptions behind your answer."} )
+    msg.append( {'role': "user", "content": "You are currently modeling a business process using BPMN. You have a textual description of the process as basis for modeling. Your current BPMN model may not be finished yet."} )
+
 
     if desc is None:
-        bpmn = {'role': 'user', 'content': str(model)}
+        bpmn = {'role': 'user', 'content': "Consider the following business process: Current BPMN XML: ###" + str(model)}
         text = {'role': 'user', 'content': text} 
         msg.append(bpmn)
         msg.append(text)
 
     else:
-        model =  {'role': 'user', 'content': str("Textual Description: " + desc)}
-        bpmn = {'role': 'user', 'content': str(model)}
+        model =  {'role': 'user', 'content': str("Consider the following business process: Textual Description: ###" + desc +"### Current BPMN Model: ###" +model +"###")}
         text = {'role': 'user', 'content': text} 
         msg.append(model)
-        msg.append(bpmn)
         msg.append(text)
 
 
@@ -635,7 +639,6 @@ def text_request(text, model, desc):
         txt = openai.ChatCompletion.create(
         model= "gpt-3.5-turbo-16k",
         messages = msg,
-        max_tokens=4000,
         temperature=0
         )
 
@@ -678,7 +681,6 @@ def pmg_request(model, name, desc):
     text = {'role': 'user', 'content': "Does the Business Process Model adhere to the G4? Model: " + model} 
     msg.append(text)
 
-    print(msg)
     
     try:
         txt = openai.ChatCompletion.create(

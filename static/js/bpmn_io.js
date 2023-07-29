@@ -401,10 +401,10 @@ weak.addEventListener('click', function (event) {
 
 function providedPrompts(index){
   var prompts = [
-    "What questions does the process raise that remain unanswered? Provide a enumeration",
+    "What questions does the process raise that remain unanswered? Provide an enumeration",
     "Which process tasks can be automated? How can this automation be implemented?",
-    "Provide possibilites to enhance the process.",
-    "Does the process currently display any weaknesses? Provide a enumeration"
+    "Provide possibilities to enhance the process.",
+    "Does the process currently display any weaknesses? Provide an enumeration"
   ];
 
   var input = prompts[index];
@@ -463,18 +463,18 @@ function output(input) {
 
 }
 
-function formatHTMLOutput(product){
-  product = product.replace(/- /g, "<br>-");
-  product = product.replace(/0/g, "<br>0");
-  product = product.replace(/1/g, "<br>1");
-  product = product.replace(/2/g, "<br>2");
-  product = product.replace(/3/g, "<br>3");
-  product = product.replace(/4/g, "<br>4");
-  product = product.replace(/5/g, "<br>5");
-  product = product.replace(/6/g, "<br>6");
-  product = product.replace(/7/g, "<br>7");
-  product = product.replace(/8/g, "<br>8");
-  product = product.replace(/9/g, "<br>9");
+function formatHTMLOutput(product){ 
+  //product = product.replace(/- /g, "<br>-");
+  product = product.replace(/10./g, "<br>10.");
+  product = product.replace(/1./g, "<br>1.");
+  product = product.replace(/2./g, "<br>2.");
+  product = product.replace(/3./g, "<br>3.");
+  product = product.replace(/4./g, "<br>4.");
+  product = product.replace(/5./g, "<br>5.");
+  product = product.replace(/6./g, "<br>6.");
+  product = product.replace(/7./g, "<br>7.");
+  product = product.replace(/8./g, "<br>8.");
+  product = product.replace(/9./g, "<br>9.");
 
   return product
 

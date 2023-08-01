@@ -2,7 +2,7 @@ import openai
 import utility as u
 
 # Setting the api key for OpenAI API, must be individually adjusted
-api_key = "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"
+api_key = "placeholder"
 openai.api_key = api_key
 
 
